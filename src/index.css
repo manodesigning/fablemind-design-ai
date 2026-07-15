@@ -1,0 +1,145 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── CSS Custom Properties ──────────────────────────────────────────────────── */
+:root {
+  --color-primary: #6D5EF5;
+  --color-primary-hover: #5B4EE0;
+  --color-accent: #8B7FFF;
+  --color-background: #0B0B0F;
+  --color-card: #15151B;
+  --color-border: #1E1E28;
+  --shadow-primary: 0 0 40px rgba(109, 94, 245, 0.15);
+}
+
+/* ─── Base Reset ─────────────────────────────────────────────────────────────── */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    height: 100%;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background-color: #0B0B0F;
+    color: #ffffff;
+    min-height: 100%;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Light mode */
+  .light body {
+    background-color: #F4F4F8;
+    color: #0B0B0F;
+  }
+
+  #root {
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  ::selection {
+    background-color: rgba(109, 94, 245, 0.3);
+    color: white;
+  }
+}
+
+/* ─── Custom Scrollbars ──────────────────────────────────────────────────────── */
+@layer utilities {
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(109, 94, 245, 0.25) transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(109, 94, 245, 0.25);
+    border-radius: 999px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(109, 94, 245, 0.45);
+  }
+
+  .h-dvh { height: 100dvh; }
+  .min-h-dvh { min-height: 100dvh; }
+}
+
+/* ─── Glassmorphism ──────────────────────────────────────────────────────────── */
+@layer components {
+  .glass {
+    background: rgba(21, 21, 27, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, #6D5EF5, #8B7FFF);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+/* ─── Animations ─────────────────────────────────────────────────────────────── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(109, 94, 245, 0.3); }
+  50% { box-shadow: 0 0 40px rgba(109, 94, 245, 0.6); }
+}
+
+/* ─── Prose / Markdown ───────────────────────────────────────────────────────── */
+.prose-custom {
+  color: #C4C4CC;
+  font-size: 0.875rem;
+  line-height: 1.7;
+  word-break: break-word;
+}
+
+.prose-custom pre {
+  margin: 0;
+}
+
+.prose-custom code:not([class]) {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8125em;
+  background: rgba(255, 255, 255, 0.08);
+  color: #8B7FFF;
+  padding: 0.15em 0.4em;
+  border-radius: 5px;
+}
+
+.prose-custom img {
+  max-width: 100%;
+  border-radius: 12px;
+}
+
+/* ─── PWA Safe Area ──────────────────────────────────────────────────────────── */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
