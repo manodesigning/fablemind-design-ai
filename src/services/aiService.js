@@ -120,6 +120,14 @@ async function tryProvider(providerId, model, messages) {
 }
 
 /**
+ * Parse error status from error message string.
+ */
+function getErrorStatus(message) {
+  const match = message.match(/error (\d+):/i);
+  return match ? parseInt(match[1]) : null;
+}
+
+/**
  * Main streaming chat function.
  *
  * @param {Object} options
@@ -161,12 +169,16 @@ export async function streamChat({
   }
 
   let lastError = null;
+  let hitRateLimit = false;
 
   for (const providerId of providerOrder) {
-    if (!hasApiKey(providerId)) continue;
+    // Skip providers without API keys
+    if (!hasApiKey(providerId)) {
+      console.log(`Skipping ${providerId}: no API key configured`);
+      continue;
+    }
 
     const providerConfig = AI_PROVIDERS[providerId];
-    // Use provider's default model if none specified or model doesn't belong to this provider
     const modelToUse = model || providerConfig.defaultModel;
 
     try {
@@ -187,12 +199,52 @@ export async function streamChat({
       return;
     } catch (err) {
       console.warn(`Provider ${providerId} failed:`, err.message);
+      const status = getErrorStatus(err.message);
+
+      // If rate limited (429), try a lighter/faster model on same provider first
+      if (status === 429 && providerId === 'groq') {
+        hitRateLimit = true;
+        const fallbackModel = 'llama-3.1-8b-instant'; // lighter Groq model
+        if (fallbackModel !== modelToUse) {
+          try {
+            console.log('Groq rate limited, trying lighter model:', fallbackModel);
+            const fallbackResp = await tryProvider(providerId, fallbackModel, contextMessages);
+            setActiveProvider(providerId);
+            let fullContent = '';
+            for await (const chunk of parseStream(fallbackResp)) {
+              fullContent += chunk;
+              onChunk(chunk);
+            }
+            onDone(fullContent, providerId);
+            return;
+          } catch (fallbackErr) {
+            console.warn('Groq fallback model also failed:', fallbackErr.message);
+          }
+        }
+      }
+
       lastError = err;
     }
   }
 
-  // All providers failed
-  const errorMsg = lastError?.message || 'All AI providers failed. Please check your API keys in Settings.';
+  // All providers failed — give a clear, actionable error message
+  let errorMsg = '⚠️ AI response failed. Please try again.';
+
+  if (hitRateLimit) {
+    const hasOpenRouter = hasApiKey('openrouter');
+    if (!hasOpenRouter) {
+      errorMsg = '⚡ Groq rate limit reached. To keep chatting:\n• Wait 1–2 minutes and try again, OR\n• Go to Settings → add a free OpenRouter API key (openrouter.ai) to use as backup.';
+    } else {
+      errorMsg = '⚡ All providers are rate limited. Please wait 1–2 minutes and try again.';
+    }
+  } else if (lastError?.message?.includes('401') || lastError?.message?.includes('Authentication')) {
+    errorMsg = '🔑 Invalid API key. Please go to Settings and check your API key.';
+  } else if (lastError?.message?.includes('No API key')) {
+    errorMsg = '🔑 No API key found. Please go to Settings → API Keys and add your Groq or OpenRouter key.';
+  } else if (lastError) {
+    errorMsg = lastError.message;
+  }
+
   onError(errorMsg);
 }
 
