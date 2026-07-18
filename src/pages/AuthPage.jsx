@@ -40,12 +40,11 @@ export default function AuthPage() {
     setError('');
     setGoogleLoading(true);
     try {
-      // This triggers a full-page redirect to Google.
-      // After Google auth, user is redirected back and onAuthStateChanged fires.
       await loginWithGoogle();
-      // Note: Code after this won't run on redirect — page navigates away
+      navigate('/chat');
     } catch (err) {
       setError(friendlyError(err.code));
+    } finally {
       setGoogleLoading(false);
     }
   };
