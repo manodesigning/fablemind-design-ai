@@ -27,7 +27,8 @@ export default function AuthPage() {
       } else {
         await signup(email, password, name);
       }
-      navigate('/chat');
+      // PublicRoute in App.jsx will automatically handle navigation 
+      // to /admin or /chat once the user object is set.
     } catch (err) {
       setError(friendlyError(err.code));
     } finally {

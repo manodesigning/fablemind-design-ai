@@ -14,15 +14,15 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
       if (firebaseUser) {
         setIsAdmin(firebaseUser.email === 'admin5108@gmail.com');
-        await updateUserProfile(firebaseUser).catch(console.error);
+        updateUserProfile(firebaseUser).catch(console.error); // Fire and forget
       } else {
         setIsAdmin(false);
       }
-      setLoading(false);
+      setLoading(false); // Stop loading immediately
     });
     return unsubscribe;
   }, []);
