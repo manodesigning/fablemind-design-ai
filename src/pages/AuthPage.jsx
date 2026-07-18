@@ -219,14 +219,15 @@ function friendlyError(code) {
     'auth/weak-password': 'Password must be at least 6 characters.',
     'auth/invalid-email': 'Please enter a valid email address.',
     'auth/popup-closed-by-user': 'Google sign-in was cancelled.',
-    'auth/popup-blocked': 'Popup was blocked by your browser. Redirecting to Google...',
+    'auth/popup-blocked': 'Popup was blocked. Please allow popups for this site.',
     'auth/cancelled-popup-request': 'Sign-in was cancelled. Please try again.',
     'auth/invalid-credential': 'Invalid credentials. Please check and try again.',
     'auth/too-many-requests': 'Too many attempts. Please wait a moment and try again.',
     'auth/network-request-failed': 'Network error. Please check your connection.',
-    'auth/unauthorized-domain': 'This domain is not authorized. Please contact support.',
+    'auth/unauthorized-domain': 'This domain is not authorized in Firebase. Please contact support.',
     'auth/operation-not-allowed': 'Google sign-in is not enabled. Please contact support.',
-    'auth/internal-error': 'An internal error occurred. Trying redirect method...',
+    'auth/internal-error': 'An internal error occurred. Please try again.',
+    'auth/invalid-continue-uri': 'Invalid redirect URL. Please try refreshing the page.',
   };
   return messages[code] || `Something went wrong (${code || 'unknown'}). Please try again.`;
 }
