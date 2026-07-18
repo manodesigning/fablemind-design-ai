@@ -4,16 +4,24 @@ import {
   signOut, updateProfile,
 } from 'firebase/auth';
 import { auth } from '../config/firebase';
+import { updateUserProfile } from '../services/firebaseService';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
+      if (firebaseUser) {
+        setIsAdmin(firebaseUser.email === 'admin5108@gmail.com');
+        await updateUserProfile(firebaseUser).catch(console.error);
+      } else {
+        setIsAdmin(false);
+      }
       setLoading(false);
     });
     return unsubscribe;
@@ -27,13 +35,14 @@ export function AuthProvider({ children }) {
     if (displayName) {
       await updateProfile(credential.user, { displayName });
     }
+    await updateUserProfile(credential.user).catch(console.error);
     return credential;
   };
 
   const logout = () => signOut(auth);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout }}>
+    <AuthContext.Provider value={{ user, isAdmin, loading, login, signup, logout }}>
       {children}
     </AuthContext.Provider>
   );

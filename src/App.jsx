@@ -12,6 +12,8 @@ const ChatPage = lazy(() => import('./pages/ChatPage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
+const AdminPage = lazy(() => import('./pages/AdminPage'));
+
 function LoadingScreen() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center">
@@ -40,10 +42,19 @@ function ProtectedRoute({ children }) {
   return children;
 }
 
-function PublicRoute({ children }) {
-  const { user, loading } = useAuth();
+function AdminRoute({ children }) {
+  const { user, isAdmin, loading } = useAuth();
   if (loading) return <LoadingScreen />;
-  if (user) return <Navigate to="/chat" replace />;
+  if (!user || !isAdmin) return <Navigate to="/chat" replace />;
+  return children;
+}
+
+function PublicRoute({ children }) {
+  const { user, isAdmin, loading } = useAuth();
+  if (loading) return <LoadingScreen />;
+  if (user) {
+    return isAdmin ? <Navigate to="/admin" replace /> : <Navigate to="/chat" replace />;
+  }
   return children;
 }
 
@@ -73,6 +84,14 @@ function AppRoutes() {
             <ProtectedRoute>
               <SettingsPage />
             </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AdminPage />
+            </AdminRoute>
           }
         />
         <Route path="*" element={<NotFoundPage />} />

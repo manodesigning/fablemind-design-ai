@@ -51,17 +51,24 @@ export default function AuthPage() {
         className="w-full max-w-md relative z-10"
       >
         {/* Logo */}
-        <div className="text-center mb-8">
+        <div className="flex flex-col items-center mb-8 relative z-10">
           <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.1 }}
-            className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary via-accent to-purple-400 flex items-center justify-center mx-auto mb-4 shadow-2xl shadow-primary/40"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', damping: 20, stiffness: 200, delay: 0.1 }}
+            className="w-24 h-24 flex items-center justify-center mb-4"
           >
-            <span className="text-xl font-bold text-white">F</span>
+            <img src="/logo-brain.png" alt="FableMind Brain" className="w-full h-full object-contain drop-shadow-2xl" />
           </motion.div>
-          <h1 className="text-2xl font-bold text-white">FableMind Design AI</h1>
-          <p className="text-sm text-muted mt-1">Your AI design partner</p>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="flex flex-col items-center"
+          >
+            <img src="/logo-text.png" alt="FableMind Design AI" className="h-8 mb-2 object-contain" />
+            <p className="text-sm text-muted">Your AI design partner</p>
+          </motion.div>
         </div>
 
         {/* Card */}

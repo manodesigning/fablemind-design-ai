@@ -1,6 +1,6 @@
 import {
-  collection, doc, addDoc, updateDoc, deleteDoc,
-  getDocs, query, orderBy, serverTimestamp, onSnapshot, writeBatch,
+  collection, doc, addDoc, updateDoc, deleteDoc, setDoc,
+  getDocs, query, orderBy, serverTimestamp, onSnapshot, writeBatch, increment,
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 
@@ -85,6 +85,15 @@ export async function addMessage(userId, chatId, { role, content, provider, mode
   await updateDoc(doc(db, 'users', userId, 'chats', chatId), {
     updatedAt: serverTimestamp(),
   });
+  // Increment user's total message usage
+  if (role === 'user') {
+    await updateDoc(doc(db, 'users', userId), {
+      totalMessages: increment(1),
+    }).catch(err => {
+      // Ignore if document doesn't exist yet (though it should)
+      console.warn("Could not increment usage:", err);
+    });
+  }
   return msgRef.id;
 }
 
@@ -100,4 +109,41 @@ export function subscribeToMessages(userId, chatId, callback) {
     const messages = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     callback(messages);
   });
+}
+
+// ─── Users & Admin ────────────────────────────────────────────────────────────
+
+export async function updateUserProfile(user) {
+  if (!user) return;
+  const userRef = doc(db, 'users', user.uid);
+  // We use setDoc with merge: true so we don't overwrite existing fields (like totalMessages)
+  await setDoc(userRef, {
+    email: user.email,
+    displayName: user.displayName || user.email.split('@')[0],
+    lastLogin: serverTimestamp(),
+  }, { merge: true });
+}
+
+export async function getAllUsers() {
+  const q = query(collection(db, 'users'), orderBy('lastLogin', 'desc'));
+  const snap = await getDocs(q);
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+// ─── Feedback ─────────────────────────────────────────────────────────────────
+
+export async function submitFeedback(userId, userEmail, text) {
+  const feedbackRef = collection(db, 'feedbacks');
+  await addDoc(feedbackRef, {
+    userId,
+    userEmail,
+    text,
+    createdAt: serverTimestamp(),
+  });
+}
+
+export async function getAllFeedbacks() {
+  const q = query(collection(db, 'feedbacks'), orderBy('createdAt', 'desc'));
+  const snap = await getDocs(q);
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }

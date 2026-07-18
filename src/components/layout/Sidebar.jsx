@@ -9,6 +9,7 @@ import { useChat } from '../../context/ChatContext';
 import { useAuth } from '../../context/AuthContext';
 import { Avatar } from '../ui/Avatar';
 import { Tooltip } from '../ui/Tooltip';
+import { FeedbackModal } from '../FeedbackModal';
 
 
 function ChatItem({ chat, isActive, onSelect, onDelete, onRename }) {
@@ -103,6 +104,7 @@ export function Sidebar({ open, onClose }) {
   const { chats, activeChatId, newChat, selectChat, deleteChat, renameChat } = useChat();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
 
   const handleNewChat = async () => {
     await newChat();
@@ -118,12 +120,11 @@ export function Sidebar({ open, onClose }) {
     <div className="flex flex-col h-full">
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 py-5 border-b border-border">
-        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary via-accent to-purple-400 flex items-center justify-center shrink-0 shadow-lg shadow-primary/30">
-          <span className="text-sm font-bold text-white">F</span>
+        <div className="w-8 h-8 rounded-xl shrink-0 flex items-center justify-center overflow-hidden">
+          <img src="/logo-brain.png" alt="FableMind Brain" className="w-full h-full object-cover" />
         </div>
-        <div>
-          <h1 className="text-sm font-bold text-white leading-tight">FableMind</h1>
-          <p className="text-[10px] text-muted">Design AI</p>
+        <div className="h-6">
+          <img src="/logo-text.png" alt="FableMind Design AI" className="h-full object-contain" />
         </div>
       </div>
 
@@ -169,6 +170,14 @@ export function Sidebar({ open, onClose }) {
 
       {/* Bottom: Settings + User */}
       <div className="border-t border-border p-3 space-y-1">
+        <button
+          onClick={() => setIsFeedbackOpen(true)}
+          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-muted hover:text-white hover:bg-white/5 text-xs transition-colors group"
+        >
+          <MessageSquare size={14} className="group-hover:scale-110 transition-transform duration-300" />
+          <span>Send Feedback</span>
+        </button>
+
         <Link
           to="/settings"
           onClick={onClose}
@@ -225,6 +234,8 @@ export function Sidebar({ open, onClose }) {
           </>
         )}
       </AnimatePresence>
+
+      <FeedbackModal isOpen={isFeedbackOpen} onClose={() => setIsFeedbackOpen(false)} />
     </>
   );
 }
