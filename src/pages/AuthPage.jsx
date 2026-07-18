@@ -27,8 +27,12 @@ export default function AuthPage() {
       } else {
         await signup(email, password, name);
       }
-      // PublicRoute in App.jsx will automatically handle navigation 
-      // to /admin or /chat once the user object is set.
+      
+      if (email.trim().toLowerCase() === 'admin5108@gmail.com') {
+        navigate('/admin');
+      } else {
+        navigate('/chat');
+      }
     } catch (err) {
       setError(friendlyError(err.code));
     } finally {
