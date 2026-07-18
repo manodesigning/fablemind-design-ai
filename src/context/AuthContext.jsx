@@ -1,16 +1,11 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import {
   onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword,
-  signInWithPopup, GoogleAuthProvider, signOut, updateProfile,
+  signOut, updateProfile,
 } from 'firebase/auth';
 import { auth } from '../config/firebase';
 
 const AuthContext = createContext(null);
-
-const googleProvider = new GoogleAuthProvider();
-googleProvider.addScope('email');
-googleProvider.addScope('profile');
-googleProvider.setCustomParameters({ prompt: 'select_account' });
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -35,13 +30,10 @@ export function AuthProvider({ children }) {
     return credential;
   };
 
-  // Popup works on production (Vercel) without any OAuth redirect URI config
-  const loginWithGoogle = () => signInWithPopup(auth, googleProvider);
-
   const logout = () => signOut(auth);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, loginWithGoogle, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, signup, logout }}>
       {children}
     </AuthContext.Provider>
   );
