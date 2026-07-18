@@ -40,11 +40,14 @@ export default function AuthPage() {
     setError('');
     setGoogleLoading(true);
     try {
-      await loginWithGoogle();
-      navigate('/chat');
+      const result = await loginWithGoogle();
+      // If result is undefined, it means a redirect was initiated
+      if (result) {
+        navigate('/chat');
+      }
+      // If redirect: page will reload automatically after Google auth
     } catch (err) {
       setError(friendlyError(err.code));
-    } finally {
       setGoogleLoading(false);
     }
   };
@@ -218,9 +221,14 @@ function friendlyError(code) {
     'auth/weak-password': 'Password must be at least 6 characters.',
     'auth/invalid-email': 'Please enter a valid email address.',
     'auth/popup-closed-by-user': 'Google sign-in was cancelled.',
+    'auth/popup-blocked': 'Popup was blocked by your browser. Redirecting to Google...',
+    'auth/cancelled-popup-request': 'Sign-in was cancelled. Please try again.',
     'auth/invalid-credential': 'Invalid credentials. Please check and try again.',
     'auth/too-many-requests': 'Too many attempts. Please wait a moment and try again.',
     'auth/network-request-failed': 'Network error. Please check your connection.',
+    'auth/unauthorized-domain': 'This domain is not authorized. Please contact support.',
+    'auth/operation-not-allowed': 'Google sign-in is not enabled. Please contact support.',
+    'auth/internal-error': 'An internal error occurred. Trying redirect method...',
   };
-  return messages[code] || 'Something went wrong. Please try again.';
+  return messages[code] || `Something went wrong (${code || 'unknown'}). Please try again.`;
 }

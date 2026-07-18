@@ -1,7 +1,8 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import {
   onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword,
-  signInWithPopup, GoogleAuthProvider, signOut, updateProfile,
+  signInWithPopup, signInWithRedirect, getRedirectResult,
+  GoogleAuthProvider, signOut, updateProfile,
 } from 'firebase/auth';
 import { auth } from '../config/firebase';
 
@@ -14,6 +15,11 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Handle redirect result after Google sign-in redirect
+    getRedirectResult(auth).catch((err) => {
+      console.error('Redirect result error:', err);
+    });
+
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
       setLoading(false);
@@ -32,7 +38,24 @@ export function AuthProvider({ children }) {
     return credential;
   };
 
-  const loginWithGoogle = () => signInWithPopup(auth, googleProvider);
+  const loginWithGoogle = async () => {
+    // Try popup first (faster UX). If blocked, fall back to redirect.
+    try {
+      return await signInWithPopup(auth, googleProvider);
+    } catch (err) {
+      // popup-blocked, cancelled, or cross-origin issues → use redirect
+      if (
+        err.code === 'auth/popup-blocked' ||
+        err.code === 'auth/popup-closed-by-user' ||
+        err.code === 'auth/cancelled-popup-request' ||
+        err.code === 'auth/internal-error'
+      ) {
+        await signInWithRedirect(auth, googleProvider);
+        return; // Page will redirect; no result here
+      }
+      throw err; // Re-throw other real errors
+    }
+  };
 
   const logout = () => signOut(auth);
 
