@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import {
   onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword,
-  signInWithPopup, signInWithRedirect, getRedirectResult,
+  signInWithRedirect, getRedirectResult,
   GoogleAuthProvider, signOut, updateProfile,
 } from 'firebase/auth';
 import { auth } from '../config/firebase';
@@ -9,16 +9,26 @@ import { auth } from '../config/firebase';
 const AuthContext = createContext(null);
 
 const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({ prompt: 'select_account' });
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [redirectError, setRedirectError] = useState(null);
 
   useEffect(() => {
-    // Handle redirect result after Google sign-in redirect
-    getRedirectResult(auth).catch((err) => {
-      console.error('Redirect result error:', err);
-    });
+    // Check if we're returning from a Google redirect sign-in
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result?.user) {
+          // Redirect sign-in succeeded — onAuthStateChanged will handle navigation
+          console.log('Redirect sign-in success:', result.user.email);
+        }
+      })
+      .catch((err) => {
+        console.error('Redirect result error:', err);
+        setRedirectError(err);
+      });
 
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
@@ -38,29 +48,13 @@ export function AuthProvider({ children }) {
     return credential;
   };
 
-  const loginWithGoogle = async () => {
-    // Try popup first (faster UX). If blocked, fall back to redirect.
-    try {
-      return await signInWithPopup(auth, googleProvider);
-    } catch (err) {
-      // popup-blocked, cancelled, or cross-origin issues → use redirect
-      if (
-        err.code === 'auth/popup-blocked' ||
-        err.code === 'auth/popup-closed-by-user' ||
-        err.code === 'auth/cancelled-popup-request' ||
-        err.code === 'auth/internal-error'
-      ) {
-        await signInWithRedirect(auth, googleProvider);
-        return; // Page will redirect; no result here
-      }
-      throw err; // Re-throw other real errors
-    }
-  };
+  // Use redirect-only (works on all browsers/extensions without popup interference)
+  const loginWithGoogle = () => signInWithRedirect(auth, googleProvider);
 
   const logout = () => signOut(auth);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, loginWithGoogle, logout }}>
+    <AuthContext.Provider value={{ user, loading, redirectError, login, signup, loginWithGoogle, logout }}>
       {children}
     </AuthContext.Provider>
   );

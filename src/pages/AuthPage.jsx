@@ -40,12 +40,10 @@ export default function AuthPage() {
     setError('');
     setGoogleLoading(true);
     try {
-      const result = await loginWithGoogle();
-      // If result is undefined, it means a redirect was initiated
-      if (result) {
-        navigate('/chat');
-      }
-      // If redirect: page will reload automatically after Google auth
+      // This triggers a full-page redirect to Google.
+      // After Google auth, user is redirected back and onAuthStateChanged fires.
+      await loginWithGoogle();
+      // Note: Code after this won't run on redirect — page navigates away
     } catch (err) {
       setError(friendlyError(err.code));
       setGoogleLoading(false);
