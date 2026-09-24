@@ -287,8 +287,4 @@ This project is currently under development.
 
 Some features may change as the project grows.
 
----
 
-## License
-
-Add your preferred license here.
